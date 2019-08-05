@@ -1,4 +1,8 @@
 const path = require(`path`);
+const webpack = require(`webpack`);
+
+const isDevelopment = process.env.NODE_ENV === `development`;
+const isProduction = !isDevelopment;
 
 module.exports = {
   entry: `./src/index.js`,
@@ -13,6 +17,7 @@ module.exports = {
     port: 1337,
     historyApiFallback: true,
     open: true,
+    hot: true,
   },
 
   module: {
@@ -40,6 +45,15 @@ module.exports = {
             }
           },
           {
+            loader: `postcss-loader`,
+            options: {
+              plugins: [
+                require(`autoprefixer`),
+                isProduction ? require(`cssnano`) : () => {},
+              ],
+            }
+          },
+          {
             loader: `sass-loader`,
             options: {
               sourceMap: true,
@@ -49,10 +63,20 @@ module.exports = {
       },
       {
         test: /\.(png|svg|jpg|gif)$/,
-        use: ["file-loader"]
+        exclude: /node_modules/,
+        use: [`file-loader`]
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        exclude: /node_modules/,
+        use: [`file-loader`]
       },
     ],
   },
+
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+  ],
 
   resolve: {
     extensions: [`.js`, `.jsx`]
